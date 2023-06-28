@@ -3,6 +3,7 @@ package BankOfArt.controller;
 import BankOfArt.dto.CreditDto;
 import BankOfArt.dto.DepositDto;
 import BankOfArt.model.entity.Credit;
+import BankOfArt.model.entity.Deposit;
 import BankOfArt.service.CreditService;
 import BankOfArt.service.DepositService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,21 @@ public class BankManagerController {
         Credit credit = creditService.createAcredit(creditDto);
         if (creditService.saveCredit(credit)) {
             return ResponseEntity.ok("The new type of credit is created");
+        }else {
+            return ResponseEntity.badRequest().body("Error. Try again");
+        }
+    }
+
+    @GetMapping(value="/depositCreate")
+    public DepositDto createAdeposit(){
+        return new DepositDto();
+    }
+
+    @PostMapping(value="/depositCreate")
+    public ResponseEntity<String> createAdeposit(@RequestBody DepositDto depositDto) {
+        Deposit deposit = depositService.createAdeposit(depositDto);
+        if (depositService.saveDeposit(deposit)) {
+            return ResponseEntity.ok("The new type of deposit is created");
         }else {
             return ResponseEntity.badRequest().body("Error. Try again");
         }

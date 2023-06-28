@@ -11,6 +11,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,6 +23,9 @@ public class UserServiceImpl implements UserService {
     BCryptPasswordEncoder bCryptPasswordEncoder;
 
     private final UserRepository userRepository;
+
+    @PersistenceContext
+    private EntityManager em;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -49,14 +54,34 @@ public class UserServiceImpl implements UserService {
         user.setName(userDto.getName());
         user.setSurname(userDto.getSurname());
         user.setUsername(userDto.getUsername());
-        user.setPassword(userDto.getPassword());
+        user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
         user.setRoles(Arrays.asList(Role.ROLE_USER));
         return user;
     }
 
     @Override
+    public User createUserByAdmin(UserDto userDto) {
+        User user = new User();
+        user.setName(userDto.getName());
+        user.setSurname(userDto.getSurname());
+        user.setUsername(userDto.getUsername());
+        user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
+        user.setRoles(Arrays.asList(Role.ROLE_USER));
+        user.setAccountNonExpired(true);
+        user.setAccountNonLocked(true);
+        user.setCredentialsNonExpired(true);
+        user.setEnabled(true);
+        return user;
+    }
+
+    @Override
     public boolean saveUser(User user) {
-        return true;
+        try {
+            userRepository.save(user);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
@@ -72,12 +97,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean deleteUser(Integer id) {
+        if (userRepository.findById(id).isPresent()) {
+            userRepository.deleteById(id);
+            return true;
+        }
         return false;
     }
 
     @Override
     public List<User> userGetList(Integer idMin) {
-        return null;
+        return em.createQuery("SELECT u FROM User u WHERE u.id > :paramId", User.class)
+                .setParameter("paramId", idMin).getResultList();
     }
 
 }

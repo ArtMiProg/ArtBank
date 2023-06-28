@@ -16,6 +16,8 @@ public interface UserService extends UserDetailsService {
 
     User createUserForRegistration(UserDto userDto);
 
+    User createUserByAdmin(UserDto userDto);
+
     boolean saveUser(User user);
 
     boolean saveUserByAdmin(User user);
